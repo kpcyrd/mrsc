@@ -1,0 +1,13 @@
+[package]
+name = "mrsc"
+version = "0.1.0"
+description = "Multi Requester Single Consumer"
+authors = ["kpcyrd <git@rxv.cc>"]
+license = "MIT"
+repository = "https://github.com/kpcyrd/mrsc"
+readme = "README.md"
+
+[badges]
+travis-ci = { repository = "kpcyrd/mrsc" }
+
+[dependencies]
