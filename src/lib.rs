@@ -1,5 +1,5 @@
 /*!
-  Multi Requester Single Consumer
+  mpsc with requests
 
   # Examples
 
