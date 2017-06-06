@@ -1,4 +1,4 @@
-# mrsc
+# mrsc [![Build Status](https://travis-ci.org/kpcyrd/mrsc.svg?branch=master)](https://travis-ci.org/kpcyrd/mrsc) [![Crates.io](https://img.shields.io/crates/v/mrsc.svg)](https://crates.io/crates/mrsc)
 
 Multi Requester Single Consumer
 
