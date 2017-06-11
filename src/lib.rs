@@ -139,6 +139,13 @@ impl<T, R> Request<T, R> {
         &self.payload
     }
 
+    /// Returns the payload and an EmptyRequest, consumes the Request.
+    pub fn take(self) -> (T, EmptyRequest<R>) {
+        (self.payload, EmptyRequest {
+            tx: self.tx,
+        })
+    }
+
     /// Reply to the request with a response. This consumes the request.
     ///
     /// # Examples
@@ -154,6 +161,35 @@ impl<T, R> Request<T, R> {
     ///
     /// // answer request
     /// let req = server.recv().unwrap();
+    /// req.reply("hello world".to_string()).unwrap();
+    pub fn reply(self, response: R) -> Result<(), mpsc::SendError<R>> {
+        self.tx.send(response)
+    }
+}
+
+/// A request without payload
+#[derive(Debug)]
+pub struct EmptyRequest<R> {
+    tx: mpsc::Sender<R>,
+}
+
+impl<R> EmptyRequest<R> {
+    /// Reply to the request with a response. This consumes the request.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mrsc;
+    ///
+    /// let server: mrsc::Server<u32, String> = mrsc::Server::new();
+    ///
+    /// let channel = server.pop();
+    /// // send request
+    /// let response = channel.req(123).unwrap();
+    ///
+    /// // answer request
+    /// let req = server.recv().unwrap();
+    /// let (payload, req) = req.take();
     /// req.reply("hello world".to_string()).unwrap();
     pub fn reply(self, response: R) -> Result<(), mpsc::SendError<R>> {
         self.tx.send(response)
@@ -243,5 +279,24 @@ mod tests {
         let response = channel.req(3).unwrap();
         let reply = response.recv().unwrap();
         assert_eq!(reply, "success: 3".to_string());
+    }
+
+    #[test]
+    fn take() {
+        let server: Server<u32, String> = Server::new();
+        let channel = server.pop();
+
+        thread::spawn(move || {
+            for i in &[1] {
+                let req = server.recv().unwrap();
+                let (payload, req) = req.take();
+                assert_eq!(&payload, i);
+                req.reply(format!("success: {}", i)).unwrap();
+            }
+        });
+
+        let response = channel.req(1).unwrap();
+        let reply = response.recv().unwrap();
+        assert_eq!(reply, "success: 1".to_string());
     }
 }
