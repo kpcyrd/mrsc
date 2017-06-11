@@ -1,6 +1,6 @@
 # mrsc [![Build Status](https://travis-ci.org/kpcyrd/mrsc.svg?branch=master)](https://travis-ci.org/kpcyrd/mrsc) [![Crates.io](https://img.shields.io/crates/v/mrsc.svg)](https://crates.io/crates/mrsc)
 
-mpsc with requests
+mpsc with requests. This is a basic building block based on rusts mpsc if you have multiple workers that need to execute transactions on a shared state, without having to share your state struct across all threads. Beware that transactions are blocking, so it's recommended to avoid expensive code in the transaction handler.
 
 ```rust
 use mrsc;
