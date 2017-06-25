@@ -33,6 +33,7 @@ type Receiver<R> = mpsc::Receiver<R>;
 
 pub type SendError<R, T> = mpsc::SendError<Request<R, T>>;
 pub type RecvError = mpsc::RecvError;
+pub type TryRecvError = mpsc::TryRecvError;
 
 /// The server that receives requests and creates channels
 #[derive(Debug)]
@@ -92,6 +93,10 @@ impl<T, R> Server<T, R> {
     /// let req = server.recv().unwrap();
     pub fn recv(&self) -> Result<Request<T, R>, RecvError> {
         self.rx.recv()
+    }
+
+    pub fn try_recv(&self) -> Result<Request<T, R>, TryRecvError> {
+        self.rx.try_recv()
     }
 }
 
@@ -226,6 +231,10 @@ impl<R> Response<R> {
     pub fn recv(self) -> Result<R, RecvError> {
         self.rx.recv()
     }
+
+    pub fn try_recv(&self) -> Result<R, TryRecvError> {
+        self.rx.try_recv()
+    }
 }
 
 
@@ -298,5 +307,22 @@ mod tests {
         let response = channel.req(1).unwrap();
         let reply = response.recv().unwrap();
         assert_eq!(reply, "success: 1".to_string());
+    }
+
+    #[test]
+    fn try_recv() {
+        let server: Server<u32, u32> = Server::new();
+        let channel = server.pop();
+
+        assert!(server.try_recv().is_err());
+        let response = channel.req(1).unwrap();
+        assert!(response.try_recv().is_err());
+
+        let req = server.try_recv().unwrap();
+        let (req, value) = req.take();
+        req.reply(value + 2).unwrap();
+
+        let result = response.recv().unwrap();
+        assert_eq!(result, 3);
     }
 }
