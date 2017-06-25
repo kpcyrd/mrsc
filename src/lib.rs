@@ -140,10 +140,10 @@ impl<T, R> Request<T, R> {
     }
 
     /// Returns the payload and an EmptyRequest, consumes the Request.
-    pub fn take(self) -> (T, EmptyRequest<R>) {
-        (self.payload, EmptyRequest {
+    pub fn take(self) -> (EmptyRequest<R>, T) {
+        (EmptyRequest {
             tx: self.tx,
-        })
+        }, self.payload)
     }
 
     /// Reply to the request with a response. This consumes the request.
@@ -189,7 +189,7 @@ impl<R> EmptyRequest<R> {
     ///
     /// // answer request
     /// let req = server.recv().unwrap();
-    /// let (payload, req) = req.take();
+    /// let (req, payload) = req.take();
     /// req.reply("hello world".to_string()).unwrap();
     pub fn reply(self, response: R) -> Result<(), mpsc::SendError<R>> {
         self.tx.send(response)
@@ -289,7 +289,7 @@ mod tests {
         thread::spawn(move || {
             for i in &[1] {
                 let req = server.recv().unwrap();
-                let (payload, req) = req.take();
+                let (req, payload) = req.take();
                 assert_eq!(&payload, i);
                 req.reply(format!("success: {}", i)).unwrap();
             }
