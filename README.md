@@ -2,6 +2,21 @@
 
 mpsc with requests. This is a basic building block based on rusts mpsc if you have multiple workers that need to execute transactions on a shared state, without having to share your state struct across all threads. Beware that transactions are blocking, so it's recommended to avoid expensive code in the transaction handler.
 
+## Installation
+
+Add this to your `Cargo.toml` dependency list:
+```toml,ignore
+[dependencies]
+mrsc = "0.2"
+```
+
+Add this to your crate root:
+```rust,ignore
+extern crate msrc
+```
+
+## Example
+
 ```rust
 use mrsc;
 use std::thread;
