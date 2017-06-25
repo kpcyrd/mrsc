@@ -7,7 +7,7 @@ mpsc with requests. This is a basic building block based on rusts mpsc if you ha
 Add this to your `Cargo.toml` dependency list:
 ```toml,ignore
 [dependencies]
-mrsc = "0.2"
+mrsc = "0.3"
 ```
 
 Add this to your crate root:
