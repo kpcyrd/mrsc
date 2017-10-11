@@ -26,6 +26,7 @@
 */
 
 use std::sync::mpsc;
+use std::time::Duration;
 
 type Sender<T, R> = mpsc::Sender<Request<T, R>>;
 type InternalReceiver<T, R> = mpsc::Receiver<Request<T, R>>;
@@ -34,6 +35,7 @@ type Receiver<R> = mpsc::Receiver<R>;
 pub type SendError<R, T> = mpsc::SendError<Request<R, T>>;
 pub type RecvError = mpsc::RecvError;
 pub type TryRecvError = mpsc::TryRecvError;
+pub type RecvTimeoutError = mpsc::RecvTimeoutError;
 
 /// The server that receives requests and creates channels
 #[derive(Debug)]
@@ -97,6 +99,10 @@ impl<T, R> Server<T, R> {
 
     pub fn try_recv(&self) -> Result<Request<T, R>, TryRecvError> {
         self.rx.try_recv()
+    }
+
+    pub fn recv_timeout(&self, timeout: Duration) -> Result<Request<T, R>, RecvTimeoutError> {
+        self.rx.recv_timeout(timeout)
     }
 }
 
@@ -235,6 +241,10 @@ impl<R> Response<R> {
     pub fn try_recv(&self) -> Result<R, TryRecvError> {
         self.rx.try_recv()
     }
+
+    pub fn recv_timeout(&self, timeout: Duration) -> Result<R, RecvTimeoutError> {
+        self.rx.recv_timeout(timeout)
+    }
 }
 
 
@@ -242,6 +252,7 @@ impl<R> Response<R> {
 mod tests {
     use super::Server;
     use std::thread;
+    use std::time::Duration;
 
     #[test]
     fn readme() {
@@ -319,6 +330,25 @@ mod tests {
         assert!(response.try_recv().is_err());
 
         let req = server.try_recv().unwrap();
+        let (req, value) = req.take();
+        req.reply(value + 2).unwrap();
+
+        let result = response.recv().unwrap();
+        assert_eq!(result, 3);
+    }
+
+    #[test]
+    fn recv_timeout() {
+        let server: Server<u32, u32> = Server::new();
+        let channel = server.pop();
+
+        let duration = Duration::from_secs(1);
+
+        assert!(server.recv_timeout(duration.clone()).is_err());
+        let response = channel.req(1).unwrap();
+        assert!(response.recv_timeout(duration.clone()).is_err());
+
+        let req = server.recv_timeout(duration.clone()).unwrap();
         let (req, value) = req.take();
         req.reply(value + 2).unwrap();
 
