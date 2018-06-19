@@ -12,7 +12,7 @@ mrsc = "0.3"
 
 Add this to your crate root:
 ```rust,ignore
-extern crate msrc
+extern crate mrsc;
 ```
 
 ## Example

@@ -128,11 +128,11 @@ impl<T, R> Channel<T, R> {
         let (tx, rx) = mpsc::channel();
         self.tx.send(Request {
             tx,
-            payload
+            payload,
         })?;
 
         Ok(Response {
-            rx: rx
+            rx,
         })
     }
 }
